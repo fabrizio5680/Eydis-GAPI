@@ -33,13 +33,26 @@ angular.module('eydis.gapi', []).
                 var q = $q.defer();
 
                 /* Important stuff that google expects (configured via the provider) */
+                var conf = {
+                    client_id: provider.client_id,
+                    scope: provider.scopes,
+                    immediate: mode
+                };
 
-
-                loaded_q.resolve(true);
-                /* Auth successful, get user info */
-                ready_q.resolve();
-                authed_q.resolve(userinfo);
-                q.resolve(userinfo);
+                $window.gapi.auth.authorize(conf,
+                    function(auth_result){
+                        if(!auth_result.error){
+                            loaded_q.resolve(true);
+                            /* Auth successful, get user info */
+                            get_user_info().then(function(userinfo){
+                                ready_q.resolve();
+                                authed_q.resolve(userinfo);
+                                q.resolve(userinfo);
+                            });
+                        } else {
+                            loaded_q.resolve(false);
+                        }
+                    });
                 return q.promise;
             };
 
@@ -97,11 +110,8 @@ angular.module('eydis.gapi', []).
                 var q = $q.defer();
                 var api_base = null;
 
-                if(custom_api_base === true) {
-                    api_base = provider.api_base;
-                } else if(custom_api_base) {
-                    api_base = custom_api_base;
-                }
+                if(custom_api_base === true) api_base = provider.api_base;
+                else if(custom_api_base) api_base = custom_api_base;
 
                 /* When GAPI is ready */
                 ready_q.promise.then(function(){
