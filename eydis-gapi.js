@@ -1,3 +1,7 @@
+/**
+ *  Removed google + auth dependency
+ */
+
 angular.module('eydis.gapi', []).
 provider('$gapi', function(){
   'use strict';
@@ -116,8 +120,8 @@ provider('$gapi', function(){
       /* When GAPI is ready */
       ready_q.promise.then(function(){
 
-        /* Load only after authenticated */
-        authed_q.promise.then(function(){
+          // Removed google + auth
+      
           /* If already loaded */
           if($window.gapi.client[name]){
             q.resolve(wrapped_clients[name]);
@@ -139,7 +143,6 @@ provider('$gapi', function(){
               }
             }, api_base);
           }
-        });
       });
       return q.promise;
     };
