@@ -18,10 +18,10 @@ angular.module('eydis.gapi', []).
 
             /* Stage2 is called after gapi bootstraps itself and initiates the load of the oauth2 library */
             $window._gapi_stage2 = function(){
-                $window.gapi.client.load('oauth2', 'v2', function(){
+                //$window.gapi.client.load('oauth2', 'v2', function(){
                     /* Try to go ahead and sign the user in */
                     signin(true);
-                });
+                //});
             };
 
             /*
