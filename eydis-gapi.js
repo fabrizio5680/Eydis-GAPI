@@ -8,7 +8,7 @@ angular.module('eydis.gapi', []).
 
         var provider = this;
 
-        this.$get = function($window, $http, $q, $log, $interval){
+        this.$get = function($window, $http, $q, $log, $interval, $timeout){
             var loaded_q = $q.defer();
             var ready_q = $q.defer();
             var authed_q = $q.defer();
@@ -19,8 +19,8 @@ angular.module('eydis.gapi', []).
             /* Stage2 is called after gapi bootstraps itself and initiates the load of the oauth2 library */
             $window._gapi_stage2 = function(){
                 //$window.gapi.client.load('oauth2', 'v2', function(){
-                    /* Try to go ahead and sign the user in */
-                    signin(true);
+                /* Try to go ahead and sign the user in */
+                signin(true);
                 //});
             };
 
@@ -97,39 +97,36 @@ angular.module('eydis.gapi', []).
                 var q = $q.defer();
                 var api_base = null;
 
-                if(custom_api_base === true) {
-                    api_base = provider.api_base;
-                } else if(custom_api_base) {
-                    api_base = custom_api_base;
+                if(custom_api_base === true) api_base = provider.api_base;
+                else if(custom_api_base) api_base = custom_api_base;
+
+                /* If already loading */
+                if(loading_clients[name]){
+                    return loading_clients[name];
                 }
 
-                /* When GAPI is ready */
-                ready_q.promise.then(function(){
+                loading_clients[name] = q.promise;
 
-                    /* Load only after authenticated */
-                    authed_q.promise.then(function(){
-                        /* If already loaded */
-                        if($window.gapi.client[name]){
-                            q.resolve(wrapped_clients[name]);
-                        }
-                        /* If already loading */
-                        if(loading_clients[name]){
-                            return loading_clients[name];
-                        }
-                        /* Load new library */
-                        else {
-                            loading_clients[name] = q.promise;
-                            $window.gapi.client.load(name, version, function(){
-                                if($window.gapi.client[name]){
-                                    $log.info('Loaded google api: ' + name);
-                                    wrapped_clients[name] = decorate($window.gapi.client[name]);
+                /* When GAPI is ready */
+                loaded_q.promise.then(function(){
+                    /* If already loaded */
+                    if($window.gapi.client[name]){
+                        q.resolve(wrapped_clients[name]);
+                    }
+                    /* Load new library */
+                    else {
+                        $window.gapi.client.load(name, version, function(){
+                            if($window.gapi.client[name]){
+                                $log.info('Loaded google api: ' + name);
+                                wrapped_clients[name] = decorate($window.gapi.client[name]);
+                                $timeout(function () {
                                     q.resolve(wrapped_clients[name]);
-                                } else {
-                                    q.reject();
-                                }
-                            }, api_base);
-                        }
-                    });
+                                });
+                            } else {
+                                q.reject();
+                            }
+                        }, api_base);
+                    }
                 });
                 return q.promise;
             };
