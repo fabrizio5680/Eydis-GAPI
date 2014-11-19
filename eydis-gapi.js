@@ -48,24 +48,13 @@ angular.module('eydis.gapi', []).
              */
             var refresh_auth_token = function(){
                 var d = $q.defer();
-                $log.info('Refreshing Google auth token');
-                $window.gapi.auth.authorize(
-                    {client_id: provider.client_id, scope: provider.scopes, immediate: true},
-                    function(auth_result){
-                        if(!auth_result.error){
-                            $log.info('successfully refreshed auth token.');
-                            d.resolve();
-                        } else {
-                            $log.error('failed to refresh auth token!');
-                            d.reject();
-                        }
-                    }
-                );
+
+                d.resolve();
                 return d.promise;
             };
 
             // refresh the token every 45 minutes
-            $interval(refresh_auth_token, 45 * 60 * 1000);
+            //$interval(refresh_auth_token, 45 * 60 * 1000);
 
             /*
              Gets the user's profile information (email, name, etc.)
